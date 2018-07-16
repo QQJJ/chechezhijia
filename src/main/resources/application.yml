@@ -1,0 +1,110 @@
+# 服务器配置
+server:
+  port: 18080
+  servlet:
+    context-path: /cczj
+
+spring:
+# MySQL连接池
+  datasource:
+    hikari:
+      # 只读
+      read-only: false
+      # 等待连接池分配连接的最大时长（毫秒）,超过这个时长还没可用的连接则发生SQLException,缺省:30秒
+      connection-timeout: 30000
+      # 一个连接idle状态的最大时长（毫秒）,超时则被释放（retired）,缺省:10分钟
+      idle-timeout: 600000
+      # 一个连接的生命时长（毫秒）,超时而且没被使用则被释放（retired）,缺省:30分钟,建议设置比数据库超时时长少30秒
+      max-lifetime: 1800000
+      # 连接池中允许的最大连接数。缺省值：10；推荐的公式：((core_count * 2) + effective_spindle_count)
+      maximum-pool-size: 60
+      minimum-idle: 10
+      # 生效超时
+      validation-timeout: 3000
+ # 默认环境
+  profiles:
+    active: dev
+# Redis 哨兵模式??
+  redis:
+    #数据库索引
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password:
+    timeout: 5000ms
+    jedis:
+      pool:
+        #最大连接数
+        max-active: 8
+        #最大阻塞等待时间(负数表示没限制)
+        max-wait: -1ms
+        #最大空闲
+        max-idle: 8
+        #最小空闲
+        min-idle: 0
+# Freemarker
+  freemarker:
+    template-loader-path: classpath:/templates/
+    cache: true
+    charset: utf-8
+    check-template-location: true
+    content-type: text/html
+    expose-request-attributes: true
+    expose-session-attributes: true
+    request-context-attribute: request
+    suffix: .ftl
+# 静态资源
+  mvc:
+    static-path-pattern: /static/**
+# mybatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*/*.xml
+  type-aliases-package: com.chechezhijia.entity
+# 日志
+logging:
+  level:
+    com.chechezhijia: debug
+# 常量
+# 微信相关
+weixin:
+  token: 12345
+  grantType: client_credential
+  appid: wx4545335ac9e89bef
+  secret: 014585763f5f5f9d91b813dca68db2dc
+
+# 七牛
+ACCESSKEY: b3i8k1UivSyu0WSBKfNWaerKtqjWPyVSd8jnQpOw
+SECRETKEY: nnd1eFGsJ9uOjqG2zFmrcZ4xUVIO9F1bT4NwNNzT
+BUCKET: AUSTENPHOTOS
+
+---
+# 多环境配置
+# 开发环境
+spring:
+  profiles: dev
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1/austen?useUnicode=true&characterEncoding=utf8&useSSL=true
+    username: root
+    password: root
+---
+# 测试环境
+spring:
+  profiles: test
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1/austentest?useUnicode=true&characterEncoding=utf8&useSSL=true
+    username: root
+    password: root
+
+---
+# 生产环境
+spring:
+  profiles: pro
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1/austentest
+    username: root
+    password: root
+
+---
