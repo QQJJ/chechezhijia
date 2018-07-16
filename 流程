@@ -1,1 +1,60 @@
 微信公众平台开发流程:
+1.需要注意订阅号与服务号权限的不同
+
+一.接入流程:
+1.填写服务器配置(微信公众号接口必须以http://或https://开头，分别支持80端口和443端口。)
+公众平台官网的开发-基本设置页面,勾选协议成为开发者.此页面可以获取 AppID(开发者ID) AppSecret(开发者密码) IP白名单
+点击“修改配置”，填写服务器地址（URL）、Token和EncodingAESKey，
+URL:用来接收微信消息和事件的接口URL。Token可由开发者可以任意填写，用作生成签名（该Token会和接口URL中包含的Token进行比对，从而验证安全性）。
+EncodingAESKey由开发者手动填写或随机生成，将用作消息体加解密密钥。
+可选择消息加解密方式：明文模式、兼容模式和安全模式,默认状态为明文模式
+
+2.验证消息来自微信
+点击提交时，微信服务器将发送GET请求到填写的服务器地址URL上,开发者通过检验signature对请求进行校验（下面有校验方式）。
+若确认此次GET请求来自微信服务器，原样返回echostr参数内容，则接入生效，成为开发者成功，否则接入失败。
+加密/校验流程如下:
+1）将token、timestamp、nonce三个参数进行字典序排序
+2）将三个参数字符串拼接成一个字符串进行sha1加密
+3）开发者获得加密后的字符串可与signature对比，标识该请求来源于微信
+
+3.依据接口文档实现业务逻辑
+
+二.access_token的处理(重点)
+1.access_token是公众号的全局唯一接口调用凭据，调用微信公众号API时需要传递此参数,access_token的存储至少要保留512个字符空间。
+access_token的有效期目前为2个小时(7200s)，需定时刷新，重复获取将导致上次获取的access_token失效(可以110分钟分钟刷新一次)
+2.还需要提供主动刷新access_token的逻辑,以备在API调用获知access_token已超时的情况下，可以触发access_token的刷新流程
+3.公众号和小程序均可以使用AppID和AppSecret调用本接口来获取access_token
+
+三. 消息的加密解密
+EncodingAESKey长度固定为43个字符，从a-z,A-Z,0-9共62个字符中选取。
+建议公众账号保存当前的和上一次的EncodingAESKey，若当前EncodingAESKey解密失败，则尝试用上一次的EncodingAESKey的解密
+项目需要使用commons-codec 微信加解密使用
+在接收消息和事件时，都需要进行消息加解密, 通过API主动调用接口（包括调用客服消息接口发消息）时，不需要进行加密
+需在官方网站下载JCE无限制权限策略文件,local_policy.jar和US_export_policy.jar将两个jar文件放到%JDK_HOME%\jre\lib\security目录下覆盖原来文件
+下载官网示例代码: https://wximg.gtimg.com/shake_tv/mpwiki/cryptoDemo.zip
+
+加解密所需参数: 通过APPID与AppSecret获取的accessToken 微信配置的encodingAesKey 微信生成的APPID
+1.加密
+WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt(accessToken, encodingAesKey, appid);
+String encryptMsg = wxBizMsgCrypt.encryptMsg(xmlStr, timeStamp, nonce);// 加密后
+2.解密
+WXBizMsgCrypt wxBizMsgCrypt = new WXBizMsgCrypt(accessToken, encodingAesKey, appid);
+String decryptMsg = wxBizMsgCrypt.decryptMsg(msgSignature, timeStamp, nonce, decryptStr);// 解密后
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
